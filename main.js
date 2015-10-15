@@ -52,17 +52,16 @@
       
       if(!opts.bounding || !opts.bounding.css){
         opts.bounding = opts.bounding || {};
-        opts.bounding.css = {
-          width: '150px',
-          height: '150px'
-        };
+        opts.bounding.css = {};
       }
+
+			if(!opts.bounding.css.width) opts.bounding.css.width = '150px';
+
+			if(!opts.bounding.css.height) opts.bounding.css.height = '150px';
 
       $.each(opts.bounding.css, function(key, rule){
         els.item.css(key, rule);
       });
-
-      els.container.append(els.item);
 
       /*
        * Create the image element
@@ -70,11 +69,19 @@
       var imageEl = function(type, item){
         els.item.empty();
         var img;
-        if(type == 'file'){
+        if(type == 'file'){ //For files, we attach the image to the component, or to an element specified via opts.bindUploadedTo
           img = $('<img />');
+
+					if(opts.bindUploadedTo){
+						opts.bindUploadedTo.append(els.item);
+					} else {
+						els.container.append(els.item);
+					}
+
           img.attr('src', item.src);
-        } else if (type == 'dom'){
+        } else if (type == 'dom'){ //For existing dom els (such as an existing image), we put the image item in the position of the current image
           img = item;
+      		els.item.insertBefore(img);
         }
 
         img.css({
@@ -94,6 +101,25 @@
       }       
 
       /*
+       * Get uploader instance
+       */
+			var Uploader = function(){
+				return opts.uploader || new Upload({
+					attachTo: els.container,
+					events: {
+						onUpload: function(files){
+							els.upload.remove();
+							if(els.controls) els.controls.show();
+							handleUpload(files[0]);
+						},
+						onRender: function(container){
+							els.upload = container;
+						}
+					}
+				});
+			}
+
+      /*
        * Image controls
        */
       var controls = function(){
@@ -110,22 +136,22 @@
         /*
          * Reupload control
          */
-        var fileSrc = (opts.file ? opts.file.name : false)
-          || (uploadedFile ? uploadedFile.name : false) 
-          || (els.img && els.img.src ? els.img.src.split('/').pop() : false);
+        var fileSrc = (opts.file && opts.file.name ? opts.file.name : false)
+          || (uploadedFile && uploadedFile.name ? uploadedFile.name : false) 
+          || (els.img && els.img.attr('src') ? els.img.attr('src').split('/').pop() : false);
 
-        if(fileSrc){
-          els.reupload = $('<div class="image-item-reupload">'+fileSrc+' <button>Reupload</button></div>');
-          var reuploadBtn = els.reupload.find('button');
 
-          reuploadBtn.on('click', function(){
-            els.upload.show();
-            els.item.hide();
-            els.reupload.hide();
-          });
+				els.reupload = $('<div class="image-item-reupload">'+(fileSrc || 'image')+' <button>Reupload</button></div>');
+				var reuploadBtn = els.reupload.find('button');
 
-          els.controls.append(els.reupload);
-        }
+				reuploadBtn.on('click', function(){
+					els.item.hide();
+					els.controls.hide();
+					Uploader();
+					els.reupload.hide();
+				});
+
+				els.controls.append(els.reupload);
 
         /*
          * Sizing controls
@@ -295,23 +321,11 @@
         controls();
       }
 
-      /*
-       * Attach file upload to container
-       */
-      var Uploader = opts.uploader || new Upload({
-        attachTo: els.container,
-        events: {
-          onUpload: function(files){
-            els.upload.hide();
-
-            handleUpload(files[0]);
-          },
-          onRender: function(container){
-            els.upload = container;
-          }
-        }
-      });
-
+			/*
+			 * Attach file upload to container
+			 */
+			Uploader();
+				
       /*
        * Uploader shouldn't be present when file is attached
        */
@@ -340,6 +354,7 @@
         remove: function(){ //Detach the component and all listeners
           if(opts.events.onRemove) opts.events.onRemove();
           els.container.remove();
+					els.item.remove();
         }
       }
     };

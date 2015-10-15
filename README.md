@@ -29,7 +29,8 @@ This provides and upload form. As soon as the user uploads the image, they will 
 
 - attachTo: $('#domElement')
 This targets the element the image picker should be attached to.
-
+- bindUploadedTo: $('#domElement')
+This is a DOM element to attach an upload to. This is so you can position it outside of the component.
 - sizer: {scaleFactor: 1.5}
 This determines how much the size slider should scale the image with each movement. The default is 1, which results in a 10% change for each position. Thus, the range of sizes using the standard scaling factor is 50-150% of original image size, on 10% intervals.
 

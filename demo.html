@@ -12,21 +12,37 @@
 </head>
 <body>
   <div id="container">
-    
+		<div style="width: 300px;background:#efefef">
+			<img src="circle.jpg" />
+		</div>
   </div>
   <script>
-  
-	//Demo with no file attached
-	$('#container').append($('<h1>Demo (no image given)</h1>'));
+
+	//Demo with image provided via dom
+	$('#container').append($('<h1>Demo (image given)</h1>'));
+  var img = $('img');
   var c = new ImageItemComponent({
     attachTo: $('#container'),
+    file: img,
+		bounding: {
+			css: {
+				width: '300px'
+			}
+		}
+  });
+
+	//Demo with no file attached
+	$('#container').append($('<h1>Demo (no image given)</h1><div id="imagehere" style="width:100px;height:100px;"></div>'));
+  var c = new ImageItemComponent({
+    attachTo: $('#container'),
+		bindUploadedTo: $('#imagehere'),
     sizer: {
       scaleFactor: 1.5
     },
     bounding: {
       css: {
-        width: '300px',
-        height: '300px'
+        width: '100px',
+        height: '100px'
       }
 		},
     events: {
@@ -36,13 +52,6 @@
     }
   });
 
-	//Demo with image provided via dom
-	$('#container').append($('<h1>Demo (image given)</h1>'));
-  var img = $('<img src="circle.jpg" />');
-  var c = new ImageItemComponent({
-    attachTo: $('#container'),
-    file: img
-  });
 
   </script>
 </body>
